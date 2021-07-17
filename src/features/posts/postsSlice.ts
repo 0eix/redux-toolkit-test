@@ -4,7 +4,7 @@ import { client } from "../../api/client";
 
 export interface IPostsState {
   status: "idle" | "loading" | "failed";
-  errorMessage: string;
+  errorMessage: string | null;
   entities: ReadonlyArray<IPost>;
   entity: IPost;
   updating: false;
@@ -12,8 +12,6 @@ export interface IPostsState {
 }
 
 const initialState: IPostsState = {
-  // { id: '1', title: 'First Post!', content: 'Hello!' },
-  // { id: '2', title: 'Second Post', content: 'More text' },
   status: "idle",
   errorMessage: null,
   entities: [],
@@ -25,16 +23,16 @@ const initialState: IPostsState = {
 export const addPostAsync = createAsyncThunk(
   "posts/addPost",
   async (post: IPost) => {
-    const response = client.post("/fakeApi/post", post);
-    return response;
+    const response = await client.post<{post: IPost}>("/fakeApi/post", post);
+    return response.post;
   }
 );
 
 export const fetchAllPostsAsync = createAsyncThunk(
   "posts/fetchAllPosts",
   async () => {
-    const response = client.get("/fakeApi/post");
-    return response;
+    const response = await client.get<{posts: IPost[]}>("/fakeApi/posts");
+    return response.posts;
   }
 );
 

@@ -63,70 +63,6 @@ const notificationTemplates = [
 ];
 
 new Server({
-  routes() {
-    this.namespace = "fakeApi";
-    //this.timing = 2000
-
-    this.resource("users");
-    this.resource("posts");
-    this.resource("comments");
-
-    const server = this;
-
-    this.post("/posts", function (schema, req) {
-      const data = this.normalizedRequestAttrs();
-      data.date = new Date().toISOString();
-      // Work around some odd behavior by Mirage that's causing an extra
-      // user entry to be created unexpectedly when we only supply a userId.
-      // It really want an entire Model passed in as data.user for some reason.
-      const user = schema.users.find(data.userId);
-      data.user = user;
-
-      if (data.content === "error") {
-        throw new Error("Could not save the post!");
-      }
-
-      const result = server.create("post", data);
-      return result;
-    });
-
-    this.get("/posts/:postId/comments", (schema, req) => {
-      const post = schema.posts.find(req.params.postId);
-      return post.comments;
-    });
-
-    this.get("/notifications", (schema, req) => {
-      const numNotifications = getRandomInt(1, 5);
-
-      let pastDate;
-
-      const now = new Date();
-
-      if (req.queryParams.since) {
-        pastDate = parseISO(req.queryParams.since);
-      } else {
-        pastDate = new Date(now.valueOf());
-        pastDate.setMinutes(pastDate.getMinutes() - 15);
-      }
-
-      // Create N random notifications. We won't bother saving these
-      // in the DB - just generate a new batch and return them.
-      const notifications = [...Array(numNotifications)].map(() => {
-        const user = randomFromArray(schema.db.users);
-        const template = randomFromArray(notificationTemplates);
-        return {
-          id: nanoid(),
-          date: faker.date.between(pastDate, now).toISOString(),
-          message: template,
-          user: user.id,
-          read: false,
-          isNew: true
-        };
-      });
-
-      return { notifications };
-    });
-  },
   models: {
     user: Model.extend({
       posts: hasMany()
@@ -210,5 +146,77 @@ new Server({
   },
   seeds(server) {
     server.createList("user", 3);
-  }
+    server.create("post", { id: '1', title: 'First Post!', content: 'Hello!' });
+    server.create("post", { id: '2', title: 'Second Post', content: 'More text' });
+
+  },
+  routes() {
+    this.namespace = "fakeApi";
+    //this.timing = 2000
+
+    this.resource("users");
+    this.resource("posts");
+    this.resource("comments");
+
+    const server = this;
+
+    // this.get("/posts", (schema) => {
+    //   return schema.posts.all();
+    // });
+
+    this.post("/posts", function (schema, req) {
+      const data = this.normalizedRequestAttrs();
+      data.date = new Date().toISOString();
+      // Work around some odd behavior by Mirage that's causing an extra
+      // user entry to be created unexpectedly when we only supply a userId.
+      // It really want an entire Model passed in as data.user for some reason.
+      const user = schema.users.find(data.userId);
+      data.user = user;
+
+      if (data.content === "error") {
+        throw new Error("Could not save the post!");
+      }
+
+      const result = server.create("post", data);
+      return result;
+    });
+
+    this.get("/posts/:postId/comments", (schema, req) => {
+      const post = schema.posts.find(req.params.postId);
+      return post.comments;
+    });
+
+    this.get("/notifications", (schema, req) => {
+      const numNotifications = getRandomInt(1, 5);
+
+      let pastDate;
+
+      const now = new Date();
+
+      if (req.queryParams.since) {
+        pastDate = parseISO(req.queryParams.since);
+      } else {
+        pastDate = new Date(now.valueOf());
+        pastDate.setMinutes(pastDate.getMinutes() - 15);
+      }
+
+      // Create N random notifications. We won't bother saving these
+      // in the DB - just generate a new batch and return them.
+      const notifications = [...Array(numNotifications)].map(() => {
+        const user = randomFromArray(schema.db.users);
+        const template = randomFromArray(notificationTemplates);
+        return {
+          id: nanoid(),
+          date: faker.date.between(pastDate, now).toISOString(),
+          message: template,
+          user: user.id,
+          read: false,
+          isNew: true
+        };
+      });
+
+      return { notifications };
+    });
+  },
+  
 });

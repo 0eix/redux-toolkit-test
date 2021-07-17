@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch } from "../../app/shared/redux-store/hooks";
 import { nanoid } from "@reduxjs/toolkit";
 
 import { postAdded } from "./postsSlice";

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../app/hooks";
+import { useAppSelector, useAppDispatch } from "../../app/shared/redux-store/hooks";
 import { fetchAllPostsAsync } from "./postsSlice";
 
 export const PostsList = () => {
